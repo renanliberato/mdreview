@@ -1,0 +1,39 @@
+{
+  "name": "mdreview",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:server": "bun run src/server/index.ts",
+    "dev:client": "vite",
+    "dev": "concurrently \"bun run dev:server\" \"bun run dev:client\"",
+    "build": "vite build",
+    "start": "bun run src/server/index.ts",
+    "test": "bun test",
+    "cli": "bun run src/cli/mdreview.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.7.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.1",
+    "unified": "^11.0.5",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.1.2",
+    "happy-dom": "^17.4.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3"
+  }
+}
