@@ -42,6 +42,21 @@ Basic auth is only active when both `MDREVIEW_USERNAME` and `MDREVIEW_PASSWORD` 
 
 ---
 
+## Export
+
+The **Export** button (`↓ Export`) in the UI toolbar downloads the currently open document as
+clean markdown — the comment block is stripped, so the file is ready to share or paste
+elsewhere. The downloaded filename matches the server-side filename.
+
+From the CLI:
+
+```bash
+mdreview export architecture.md                       # print to stdout
+mdreview export architecture.md --output=./copy.md    # save to local file
+```
+
+---
+
 ## Architecture
 
 ```

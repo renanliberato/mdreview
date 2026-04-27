@@ -61,7 +61,7 @@ export function parseArgv(args: string[]): ParsedArgv {
 }
 
 const USAGE = `Usage: mdreview <command> <args>
-Commands: add-comment, find-snippet, list-messages, list-threads, update-comment-ref, upload, validate`;
+Commands: add-comment, export, find-snippet, list-messages, list-threads, update-comment-ref, upload, validate`;
 
 async function notImplemented(): Promise<number> {
   process.stderr.write('error: command not yet implemented\n');
@@ -76,6 +76,10 @@ async function dispatch(argv: ParsedArgv): Promise<number> {
   }
 
   switch (argv.command) {
+    case 'export': {
+      const { exportCommand } = await import('./commands/export');
+      return exportCommand(argv.positional, argv.flags);
+    }
     case 'find-snippet': {
       const { findSnippetCommand } = await import('./commands/findSnippet');
       return findSnippetCommand(argv.positional, argv.flags);

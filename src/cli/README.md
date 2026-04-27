@@ -64,6 +64,29 @@ After that, `mdreview <command> ...` works from any directory.
 
 ## Commands
 
+### export
+
+```
+mdreview export <file> [--output=<local-path>]
+```
+
+Downloads a file from the server's `docs/` directory as clean markdown (comment block
+stripped). Prints the content to stdout by default; pass `--output=<path>` to write to a
+local file instead.
+
+Exit codes: 0 (exported), 1 (bad args / write failed), 2 (file not found / forbidden path).
+
+**Example:**
+
+```
+$ mdreview export architecture.md --output=./local-copy.md
+exported to /abs/path/local-copy.md
+
+$ mdreview export architecture.md > clean.md
+```
+
+---
+
 ### upload
 
 ```

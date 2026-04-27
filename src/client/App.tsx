@@ -10,6 +10,7 @@ export function App(): React.JSX.Element {
   const loading    = useStore((s) => s.loading);
   const error      = useStore((s) => s.error);
   const user       = useStore((s) => s.user);
+  const raw        = useStore((s) => s.raw);
   const showDiff   = useStore((s) => s.showDiff);
   const loadFile   = useStore((s) => s.loadFile);
   const setUser    = useStore((s) => s.setUser);
@@ -44,6 +45,18 @@ export function App(): React.JSX.Element {
   const handleToggleDiff = useCallback(() => {
     setShowDiff(!showDiff);
   }, [showDiff, setShowDiff]);
+
+  const handleExport = useCallback(() => {
+    if (!filePath || !raw) return;
+    const filename = filePath.split('/').pop() ?? 'document.md';
+    const blob = new Blob([raw], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [filePath, raw]);
 
   const handleUserChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,6 +122,14 @@ export function App(): React.JSX.Element {
           ± Diff
         </button>
 
+        <button
+          className="app-header__btn"
+          onClick={handleExport}
+          disabled={!filePath || !raw}
+          title="Download markdown file"
+        >
+          ↓ Export
+        </button>
 
       </header>
 
