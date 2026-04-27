@@ -21,6 +21,7 @@ export function CommentDialog({
   onCancel,
 }: CommentDialogProps): React.JSX.Element {
   const user = useStore((s) => s.user);
+  const setUser = useStore((s) => s.setUser);
   const [text, setText] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -49,11 +50,12 @@ export function CommentDialog({
     if (!trimmed) return;
     if (!user.trim()) {
       // eslint-disable-next-line no-alert
-      window.alert('Please enter your name in the "Your name" field before commenting.');
-      return;
+      const name = window.prompt('Enter your name before commenting:');
+      if (!name?.trim()) return;
+      setUser(name.trim());
     }
     onSubmit(trimmed);
-  }, [text, user, onSubmit]);
+  }, [text, user, onSubmit, setUser]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
