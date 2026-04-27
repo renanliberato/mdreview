@@ -22,6 +22,10 @@ export function App(): React.JSX.Element {
   const stopPollingRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
+    document.title = filePath ? filePath : 'mdreview';
+  }, [filePath]);
+
+  useEffect(() => {
     const { file, user: urlUser } = parseUrlParams();
 
     // Seed user from URL param if present (store already has localStorage value
