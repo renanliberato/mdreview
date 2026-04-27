@@ -85,9 +85,18 @@ diff.get('/', async (c) => {
     return c.json({ error: 'forbidden' }, 403);
   }
 
-  // Run git diff HEAD against the file (relative to cwd which is project root)
+  // Find the git root for this file's directory (supports nested repos under docs/)
+  const fileDir = resolve(absPath, '..');
+  const gitRootResult = spawnSync('git', ['rev-parse', '--show-toplevel'], {
+    cwd: fileDir,
+    encoding: 'utf-8',
+    timeout: 5000,
+  });
+  const gitCwd = gitRootResult.stdout ? gitRootResult.stdout.trim() : process.cwd();
+
+  // Run git diff HEAD against the file using its own repo root as cwd
   const result = spawnSync('git', ['diff', 'HEAD', '--', absPath], {
-    cwd: process.cwd(),
+    cwd: gitCwd,
     encoding: 'utf-8',
     timeout: 5000,
   });
@@ -101,7 +110,7 @@ diff.get('/', async (c) => {
     // Also try comparing against index (untracked / new files show nothing with HEAD)
     // Try git diff --cached and git status to detect new/untracked files
     const statusResult = spawnSync('git', ['status', '--porcelain', '--', absPath], {
-      cwd: process.cwd(),
+      cwd: gitCwd,
       encoding: 'utf-8',
       timeout: 5000,
     });
