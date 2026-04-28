@@ -9,7 +9,7 @@ export function ThreadSidebar(): React.JSX.Element {
   const setShowResolved = useStore((s) => s.setShowResolved);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [collapsed, setCollapsed]   = useState(false);
+  const [collapsed, setCollapsed]   = useState(true);
 
   // Listen for cross-component "select thread" events dispatched by MarkdownView
   // when the user clicks a <mark> highlight.
@@ -17,6 +17,7 @@ export function ThreadSidebar(): React.JSX.Element {
     function handleSelectThread(e: Event): void {
       const detail = (e as CustomEvent<{ threadId: string }>).detail;
       setExpandedId(detail.threadId);
+      setCollapsed(false);
       const thread = useStore.getState().threads.find((t) => t.id === detail.threadId);
       if (thread?.resolved) setShowResolved(true);
     }
