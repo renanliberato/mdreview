@@ -951,3 +951,72 @@ body {
 .error-banner__close:hover {
   opacity: 1;
 }
+
+/* ============================================================
+   Onboarding popup
+   ============================================================ */
+
+.onboarding-popup {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1100;
+  animation: onboarding-slide-in 0.2s ease-out;
+}
+
+@keyframes onboarding-slide-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.onboarding-popup__content {
+  background: #1e2a3a;
+  color: #e8edf3;
+  border-radius: 10px;
+  padding: 16px 18px;
+  width: 230px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onboarding-popup__title {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+}
+
+.onboarding-popup__steps {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #b0bec8;
+}
+
+.onboarding-popup__steps kbd {
+  font-family: inherit;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.onboarding-popup__btn {
+  align-self: flex-end;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.onboarding-popup__btn:hover {
+  background: #357abd;
+}

@@ -4,6 +4,7 @@ import { parseUrlParams } from './lib/share';
 import { FilePicker } from './components/FilePicker';
 import { MarkdownView } from './components/MarkdownView';
 import { ThreadSidebar } from './components/ThreadSidebar';
+import { OnboardingPopup } from './components/OnboardingPopup';
 
 export function App(): React.JSX.Element {
   const filePath   = useStore((s) => s.filePath);
@@ -136,6 +137,8 @@ export function App(): React.JSX.Element {
         </button>
 
       </header>
+
+      <OnboardingPopup fileLoaded={!!filePath} />
 
       <div className="app-body">
         <main className="app-content">

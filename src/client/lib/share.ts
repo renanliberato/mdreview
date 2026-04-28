@@ -1,5 +1,6 @@
 const STORAGE_KEY = 'mdreview-user';
 const RECENT_FILES_KEY = 'mdreview-recent-files';
+const ONBOARDING_KEY = 'mdreview-onboarding-seen';
 const MAX_RECENT = 10;
 
 // ---------------------------------------------------------------------------
@@ -53,6 +54,22 @@ export function getRecentFiles(): string[] {
     return JSON.parse(localStorage.getItem(RECENT_FILES_KEY) ?? '[]') as string[];
   } catch {
     return [];
+  }
+}
+
+export function hasSeenOnboarding(): boolean {
+  try {
+    return localStorage.getItem(ONBOARDING_KEY) === '1';
+  } catch {
+    return true; // assume seen if localStorage unavailable
+  }
+}
+
+export function markOnboardingSeen(): void {
+  try {
+    localStorage.setItem(ONBOARDING_KEY, '1');
+  } catch {
+    // ignore
   }
 }
 
