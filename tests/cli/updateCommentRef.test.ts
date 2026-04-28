@@ -1,46 +1,25 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { spawn } from 'bun';
-import { writeFile, readFile, mkdtemp, rm } from 'fs/promises';
-import { tmpdir } from 'os';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 import { parseCommentBlock, stripCommentBlock, serializeCommentBlock } from '../../src/shared/commentBlock';
 import { sourceToPlainText } from '../../src/cli/lib/offsetBridge';
+import { startCliHarness, type CliHarness } from './_harness';
 
 // ---------------------------------------------------------------------------
-// CLI runner helper
+// Harness setup
 // ---------------------------------------------------------------------------
 
-async function runCli(
-  args: string[],
-  cwd?: string,
-): Promise<{ stdout: string; stderr: string; code: number }> {
-  const proc = spawn({
-    cmd: ['bun', 'run', join(import.meta.dir, '../../src/cli/mdreview.ts'), ...args],
-    cwd: cwd ?? process.cwd(),
-    stdout: 'pipe',
-    stderr: 'pipe',
-  });
-
-  const code = await proc.exited;
-  return {
-    stdout: await new Response(proc.stdout).text(),
-    stderr: await new Response(proc.stderr).text(),
-    code,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Temp-dir fixture helpers
-// ---------------------------------------------------------------------------
-
+let harness: CliHarness;
 let tmpDir: string;
+const runCli = (args: string[]) => harness.runCli(args);
 
-beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'mdreview-updateref-'));
+beforeAll(async () => {
+  harness = await startCliHarness('updateref');
+  tmpDir = harness.docsRoot;
 });
 
-afterEach(async () => {
-  await rm(tmpDir, { recursive: true, force: true });
+afterAll(async () => {
+  await harness.stop();
 });
 
 function commentBlock(threads: object[]): string {
@@ -149,7 +128,7 @@ describe('update-comment-ref command', () => {
   it('file not found → exit 2', async () => {
     const { stderr, code } = await runCli([
       'update-comment-ref',
-      '/nonexistent/path/doc.md',
+      'nonexistent-updateref.md',
       't-abc123',
       '--quote=anything',
     ]);

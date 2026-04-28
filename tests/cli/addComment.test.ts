@@ -1,54 +1,25 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { spawn } from 'bun';
-import { writeFile, readFile, mkdtemp, rm } from 'fs/promises';
-import { tmpdir } from 'os';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 import { parseCommentBlock, stripCommentBlock, serializeCommentBlock } from '../../src/shared/commentBlock';
+import { startCliHarness, type CliHarness } from './_harness';
 
 // ---------------------------------------------------------------------------
-// CLI runner helper
+// Harness setup
 // ---------------------------------------------------------------------------
 
-async function runCli(
-  args: string[],
-  cwd?: string,
-  stdinText?: string,
-): Promise<{ stdout: string; stderr: string; code: number }> {
-  const proc = spawn({
-    cmd: ['bun', 'run', join(import.meta.dir, '../../src/cli/mdreview.ts'), ...args],
-    cwd: cwd ?? process.cwd(),
-    stdout: 'pipe',
-    stderr: 'pipe',
-    stdin: stdinText !== undefined ? 'pipe' : undefined,
-  });
-
-  if (stdinText !== undefined && proc.stdin) {
-    // proc.stdin is a Bun FileSink — use write() + end()
-    const sink = proc.stdin as import('bun').FileSink;
-    sink.write(new TextEncoder().encode(stdinText));
-    sink.end();
-  }
-
-  const code = await proc.exited;
-  return {
-    stdout: await new Response(proc.stdout).text(),
-    stderr: await new Response(proc.stderr).text(),
-    code,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Temp-dir fixture helpers
-// ---------------------------------------------------------------------------
-
+let harness: CliHarness;
 let tmpDir: string;
+const runCli = (args: string[], _cwd?: string, stdinText?: string) =>
+  harness.runCli(args, undefined, stdinText);
 
-beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'mdreview-addcomment-'));
+beforeAll(async () => {
+  harness = await startCliHarness('addcomment');
+  tmpDir = harness.docsRoot;
 });
 
-afterEach(async () => {
-  await rm(tmpDir, { recursive: true, force: true });
+afterAll(async () => {
+  await harness.stop();
 });
 
 function commentBlock(threads: object[]): string {
@@ -114,7 +85,7 @@ describe('add-comment command', () => {
   it('file not found → exit 2', async () => {
     const { stderr, code } = await runCli([
       'add-comment',
-      '/nonexistent/path/doc.md',
+      'nonexistent-addcomment.md',
       't-abc123',
       '--text=Hello',
     ]);

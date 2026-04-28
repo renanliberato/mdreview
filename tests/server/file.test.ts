@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
-import { writeFile, unlink, mkdtemp } from 'fs/promises';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { writeFile, unlink, mkdtemp, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { Hono } from 'hono';
@@ -14,11 +14,15 @@ const TEST_PORT = 3997;
 
 let server: Server;
 let baseUrl: string;
+let docsRoot: string;
+let fileCounter = 0;
 
 const app = new Hono();
 app.route('/api/file', fileRoute);
 
 beforeAll(async () => {
+  docsRoot = await mkdtemp(join(tmpdir(), 'mdreview-file-test-'));
+  process.env.MDREVIEW_DOCS_ROOT = docsRoot;
   await new Promise<void>((resolve) => {
     server = serve({ fetch: app.fetch, port: TEST_PORT }, () => {
       baseUrl = `http://localhost:${TEST_PORT}`;
@@ -31,20 +35,22 @@ afterAll(async () => {
   await new Promise<void>((resolve, reject) => {
     server.close((err) => (err ? reject(err) : resolve()));
   });
+  delete process.env.MDREVIEW_DOCS_ROOT;
+  await rm(docsRoot, { recursive: true, force: true });
 });
 
 // ---- helpers ------------------------------------------------------------------
 
+/** Writes `content` to a unique file under docsRoot and returns its relative name. */
 async function tmpFile(content: string): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'mdreview-test-'));
-  const filePath = join(dir, 'test.md');
-  await writeFile(filePath, content, 'utf-8');
-  return filePath;
+  const name = `t${fileCounter++}.md`;
+  await writeFile(join(docsRoot, name), content, 'utf-8');
+  return name;
 }
 
-async function cleanupFile(filePath: string): Promise<void> {
+async function cleanupFile(relativePath: string): Promise<void> {
   try {
-    await unlink(filePath);
+    await unlink(join(docsRoot, relativePath));
   } catch {
     // ignore if already gone
   }
@@ -90,7 +96,7 @@ describe('GET /api/file', () => {
   });
 
   it('returns 404 for a non-existent file', async () => {
-    const res = await fetch(`${baseUrl}/api/file?path=${encodeURIComponent('/tmp/this-does-not-exist-mdreview.md')}`);
+    const res = await fetch(`${baseUrl}/api/file?path=${encodeURIComponent('does-not-exist-mdreview.md')}`);
     expect(res.status).toBe(404);
 
     const body = await res.json() as { error: string };

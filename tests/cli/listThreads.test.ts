@@ -1,43 +1,23 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { spawn } from 'bun';
-import { writeFile, mkdtemp, rm } from 'fs/promises';
-import { tmpdir } from 'os';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { startCliHarness, type CliHarness } from './_harness';
 
 // ---------------------------------------------------------------------------
-// CLI runner helper
+// Harness setup
 // ---------------------------------------------------------------------------
 
-async function runCli(
-  args: string[],
-  cwd?: string,
-): Promise<{ stdout: string; stderr: string; code: number }> {
-  const proc = spawn({
-    cmd: ['bun', 'run', join(import.meta.dir, '../../src/cli/mdreview.ts'), ...args],
-    cwd: cwd ?? process.cwd(),
-    stdout: 'pipe',
-    stderr: 'pipe',
-  });
-  const code = await proc.exited;
-  return {
-    stdout: await new Response(proc.stdout).text(),
-    stderr: await new Response(proc.stderr).text(),
-    code,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Fixture helpers
-// ---------------------------------------------------------------------------
-
+let harness: CliHarness;
 let tmpDir: string;
+const runCli = (args: string[]) => harness.runCli(args);
 
-beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'mdreview-list-threads-'));
+beforeAll(async () => {
+  harness = await startCliHarness('list-threads');
+  tmpDir = harness.docsRoot;
 });
 
-afterEach(async () => {
-  await rm(tmpDir, { recursive: true, force: true });
+afterAll(async () => {
+  await harness.stop();
 });
 
 function commentBlock(threads: object[]): string {
@@ -100,7 +80,7 @@ describe('list-threads command', () => {
   });
 
   it('file not found → exit 2', async () => {
-    const { stderr, code } = await runCli(['list-threads', '/nonexistent/path/doc.md']);
+    const { stderr, code } = await runCli(['list-threads', 'nonexistent-doc.md']);
     expect(code).toBe(2);
     expect(stderr).toContain('not_found');
   });

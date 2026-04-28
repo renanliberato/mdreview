@@ -80,27 +80,27 @@ describe('captureSelection', () => {
     cleanup(outside)
   })
 
-  it('captures a single-node selection: "Hello" in <p>Hello world</p>', () => {
-    const container = makeContainer('<p>Hello world</p>')
+  it('captures a single-node selection: "The quick brown fox jumps" in long paragraph', () => {
+    const container = makeContainer('<p>The quick brown fox jumps over the lazy dog</p>')
     const textNode = container.querySelector('p')!.firstChild!
-    selectInNode(textNode, 0, 5)
+    selectInNode(textNode, 0, 25)
     const anchor = captureSelection(container)
     expect(anchor).not.toBeNull()
-    expect(anchor!.quote).toBe('Hello')
+    expect(anchor!.quote).toBe('The quick brown fox jumps')
     expect(anchor!.startOffset).toBe(0)
-    expect(anchor!.endOffset).toBe(5)
+    expect(anchor!.endOffset).toBe(25)
     cleanup(container)
   })
 
-  it('captures a mid-string selection: "world" in <p>Hello world</p>', () => {
-    const container = makeContainer('<p>Hello world</p>')
+  it('captures a mid-string selection: "jumps over the lazy dog" in long paragraph', () => {
+    const container = makeContainer('<p>The quick brown fox jumps over the lazy dog</p>')
     const textNode = container.querySelector('p')!.firstChild!
-    selectInNode(textNode, 6, 11)
+    selectInNode(textNode, 20, 43)
     const anchor = captureSelection(container)
     expect(anchor).not.toBeNull()
-    expect(anchor!.quote).toBe('world')
-    expect(anchor!.startOffset).toBe(6)
-    expect(anchor!.endOffset).toBe(11)
+    expect(anchor!.quote).toBe('jumps over the lazy dog')
+    expect(anchor!.startOffset).toBe(20)
+    expect(anchor!.endOffset).toBe(43)
     cleanup(container)
   })
 

@@ -35,6 +35,10 @@ export function mapApiError(e: unknown, file?: string): { code: number; msg: str
     }
     case 'orphan':
       return { code: Exit.VALIDATION, msg: `error: anchor orphan; quote not found\n` };
+    case 'start_out_of_bounds':
+      return { code: Exit.USER, msg: `error: start out of doc bounds\n` };
+    case 'end_out_of_bounds':
+      return { code: Exit.USER, msg: `error: end out of doc bounds\n` };
     case 'missing_path':
     case 'missing_thread_id':
     case 'invalid_text':
@@ -44,8 +48,6 @@ export function mapApiError(e: unknown, file?: string): { code: number; msg: str
     case 'end_before_start':
     case 'no_fields':
     case 'invalid_context':
-    case 'start_out_of_bounds':
-    case 'end_out_of_bounds':
       return { code: Exit.USER, msg: `error: ${err.error}\n` };
     default:
       return { code: Exit.USER, msg: `error: ${err.error} (status ${err.status})\n` };

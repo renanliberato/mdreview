@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { readFile, writeFile } from 'fs/promises';
-import { resolve, join, normalize } from 'path';
+import { resolve, join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import {
   parseCommentBlock,
@@ -19,11 +19,14 @@ import { sourceToPlainText } from '../../cli/lib/offsetBridge';
 
 const cli = new Hono();
 
-const DOCS_ROOT = resolve(process.cwd(), 'docs');
+function docsRoot(): string {
+  return resolve(process.env.MDREVIEW_DOCS_ROOT ?? join(process.cwd(), 'docs'));
+}
 
-function resolveSafePath(relativePath: string): string | null {
-  const resolved = normalize(join(DOCS_ROOT, relativePath));
-  if (!resolved.startsWith(DOCS_ROOT + '/') && resolved !== DOCS_ROOT) return null;
+function resolveSafePath(inputPath: string): string | null {
+  const root = docsRoot();
+  const resolved = resolve(root, inputPath);
+  if (!resolved.startsWith(root + '/') && resolved !== root) return null;
   return resolved;
 }
 

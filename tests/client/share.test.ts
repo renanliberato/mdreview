@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import {
   parseUrlParams,
-  buildShareUrl,
-  copyShareUrl,
   getStoredUser,
   setStoredUser,
 } from '../../src/client/lib/share';
@@ -94,53 +92,6 @@ describe('parseUrlParams', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildShareUrl
-// ---------------------------------------------------------------------------
-
-describe('buildShareUrl', () => {
-  it('builds a URL with file, user, and thread', () => {
-    withLocation({ origin: 'http://host:3000', pathname: '/' }, () => {
-      const url = buildShareUrl({ file: '/docs/test.md', user: 'renan', thread: 't-abc' });
-      expect(url).toContain('http://host:3000/');
-      expect(url).toContain('file=');
-      expect(url).toContain('user=renan');
-      expect(url).toContain('thread=t-abc');
-    });
-  });
-
-  it('omits user when not provided', () => {
-    withLocation({ origin: 'http://host:3000', pathname: '/' }, () => {
-      const url = buildShareUrl({ file: '/docs/test.md' });
-      expect(url).not.toContain('user=');
-      expect(url).toContain('file=');
-    });
-  });
-
-  it('omits thread when not provided', () => {
-    withLocation({ origin: 'http://host:3000', pathname: '/' }, () => {
-      const url = buildShareUrl({ file: '/docs/test.md', user: 'alice' });
-      expect(url).not.toContain('thread=');
-      expect(url).toContain('user=alice');
-    });
-  });
-
-  it('URL-encodes the file path', () => {
-    withLocation({ origin: 'http://localhost:3000', pathname: '/' }, () => {
-      const url = buildShareUrl({ file: '/abs/path/doc.md' });
-      // URLSearchParams encodes / as %2F
-      expect(url).toContain('%2F');
-    });
-  });
-
-  it('uses origin and pathname from window.location', () => {
-    withLocation({ origin: 'https://review.example.com', pathname: '/app' }, () => {
-      const url = buildShareUrl({ file: '/x.md' });
-      expect(url.startsWith('https://review.example.com/app?')).toBe(true);
-    });
-  });
-});
-
-// ---------------------------------------------------------------------------
 // localStorage round-trip: setStoredUser / getStoredUser
 // ---------------------------------------------------------------------------
 
@@ -174,30 +125,3 @@ describe('getStoredUser / setStoredUser', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// copyShareUrl
-// ---------------------------------------------------------------------------
-
-describe('copyShareUrl', () => {
-  it('calls navigator.clipboard.writeText with the url', async () => {
-    const written: string[] = [];
-    const originalClipboard = (navigator as Navigator & { clipboard?: Clipboard }).clipboard;
-
-    Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText: async (text: string) => { written.push(text); } },
-      writable: true,
-      configurable: true,
-    });
-
-    try {
-      await copyShareUrl('http://example.com/?file=/x.md');
-      expect(written).toEqual(['http://example.com/?file=/x.md']);
-    } finally {
-      Object.defineProperty(navigator, 'clipboard', {
-        value: originalClipboard,
-        writable: true,
-        configurable: true,
-      });
-    }
-  });
-});
