@@ -157,6 +157,40 @@ describe('next-ai-mention command', () => {
     expect(block2.length).toBeGreaterThan(1);
   });
 
+  it('orphan: human output has thread id, prompt, and orphan line; exit 0', async () => {
+    await h.writeDoc('orphan-human.md', DOC_BODY + commentBlock([
+      makeThread({
+        threadId: 't-orphan',
+        quote: 'XYZZY_NONEXISTENT_TEXT_THAT_CANNOT_BE_FOUND',
+        startOffset: 9999,
+        comments: [{ text: '@ai please help', createdAt: '2025-01-01T00:00:00.000Z' }],
+      }),
+    ]));
+    const { stdout, code } = await h.runCli(['next-ai-mention', 'orphan-human.md']);
+    expect(code).toBe(0);
+    expect(stdout).toContain('thread: t-orphan');
+    expect(stdout).toContain('prompt: @ai please help');
+    expect(stdout).toContain('(orphan: anchor no longer resolves)');
+    expect(stdout).not.toContain('quote:');
+    expect(stdout).not.toContain('match:');
+  });
+
+  it('orphan: --json output has snippet: null; exit 0', async () => {
+    await h.writeDoc('orphan-json.md', DOC_BODY + commentBlock([
+      makeThread({
+        threadId: 't-orphan-json',
+        quote: 'XYZZY_NONEXISTENT_TEXT_THAT_CANNOT_BE_FOUND',
+        startOffset: 9999,
+        comments: [{ text: '@ai check this', createdAt: '2025-01-01T00:00:00.000Z' }],
+      }),
+    ]));
+    const { stdout, code } = await h.runCli(['next-ai-mention', 'orphan-json.md', '--json']);
+    expect(code).toBe(0);
+    const parsed = JSON.parse(stdout) as { thread: { id: string }; snippet: null };
+    expect(parsed.thread.id).toBe('t-orphan-json');
+    expect(parsed.snippet).toBeNull();
+  });
+
   it('ordering: picks oldest last-comment createdAt across two matching threads', async () => {
     const body = '# Doc\n\nSome text here.\n\nMore text here.\n';
     await h.writeDoc('ordering.md', body + commentBlock([

@@ -340,10 +340,13 @@ cli.get('/next-ai-mention', async (c) => {
   if (!thread) return c.json({ error: 'no_pending_ai_mention' }, 404);
 
   const anchor = thread.comments[0]?.anchor;
-  if (!anchor) return c.json({ error: 'orphan' }, 422);
+  const result = anchor
+    ? (firstHit(rawStripped, anchor) ?? tokenPrefix(rawStripped, anchor))
+    : null;
 
-  const result = firstHit(rawStripped, anchor) ?? tokenPrefix(rawStripped, anchor);
-  if (!result) return c.json({ error: 'orphan' }, 422);
+  if (!result) {
+    return c.json({ thread, snippet: null });
+  }
 
   const { line, col } = lineOf(rawStripped, result.offset);
   const lines = rawStripped.split('\n');
@@ -352,7 +355,7 @@ cli.get('/next-ai-mention', async (c) => {
   return c.json({
     thread,
     snippet: {
-      quote: anchor.quote,
+      quote: anchor!.quote,
       line,
       col,
       strategy: result.strategy,

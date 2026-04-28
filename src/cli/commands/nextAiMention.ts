@@ -13,7 +13,7 @@ interface SnippetInfo {
 
 interface NextAiMentionResponse {
   thread: Thread;
-  snippet: SnippetInfo;
+  snippet: SnippetInfo | null;
 }
 
 export async function nextAiMentionCommand(
@@ -52,14 +52,23 @@ export async function nextAiMentionCommand(
     }
 
     const last = res.thread.comments[res.thread.comments.length - 1];
-    const out = [
-      `thread: ${res.thread.id}`,
-      `prompt: ${last.text}`,
-      `quote:  "${res.snippet.quote}"`,
-      `match:  line ${res.snippet.line}, col ${res.snippet.col} (strategy: ${res.snippet.strategy})`,
-      '--',
-      res.snippet.contextBlock,
-    ].join('\n') + '\n';
+    let out: string;
+    if (res.snippet === null) {
+      out = [
+        `thread: ${res.thread.id}`,
+        `prompt: ${last.text}`,
+        `(orphan: anchor no longer resolves)`,
+      ].join('\n') + '\n';
+    } else {
+      out = [
+        `thread: ${res.thread.id}`,
+        `prompt: ${last.text}`,
+        `quote:  "${res.snippet.quote}"`,
+        `match:  line ${res.snippet.line}, col ${res.snippet.col} (strategy: ${res.snippet.strategy})`,
+        '--',
+        res.snippet.contextBlock,
+      ].join('\n') + '\n';
+    }
 
     process.stdout.write(out);
     return Exit.OK;

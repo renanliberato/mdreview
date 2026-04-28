@@ -190,6 +190,28 @@ The JSON shape is:
 }
 ```
 
+When the thread's anchor no longer resolves (the stored quote is not found in the document),
+`snippet` is `null`:
+
+```json
+{
+  "thread": { /* full Thread object */ },
+  "snippet": null
+}
+```
+
+**Orphan branch:** When `snippet` is `null`, the anchor is orphaned — the human has edited
+the document and the stored quote no longer exists. Do **not** attempt prose-based reasoning
+about the document context. Instead:
+
+1. Add a comment to the thread explaining that the anchor is orphaned and asking the human
+   to re-anchor it before you can continue:
+   ```
+   mdreview add-comment <file> <thread-id> \
+     --text="The anchor for this thread is orphaned — the quoted text no longer appears in the document. Please re-anchor the thread with a current quote using \`mdreview update-comment-ref\`, then mention @ai again."
+   ```
+2. Re-run `mdreview next-ai-mention <file> --json` to continue draining the queue.
+
 ---
 
 ## Anchor drift

@@ -108,4 +108,17 @@ describe('selectNextAiMention', () => {
     });
     expect(selectNextAiMention([t])).toBeNull();
   });
+
+  it('returns orphan thread even when anchor quote does not appear in any document (selector does not resolve anchors)', () => {
+    const t = makeThread({
+      id: 't-orphan',
+      comments: [
+        makeComment({
+          text: '@ai help me',
+          anchor: { quote: 'XYZZY_NONEXISTENT_TEXT', startOffset: 0, endOffset: 22, xpath: '/p' },
+        }),
+      ],
+    });
+    expect(selectNextAiMention([t])).toBe(t);
+  });
 });
