@@ -9,6 +9,7 @@ export const Exit = {
   NOT_FOUND: 2,
   THREAD: 3,
   VALIDATION: 4,
+  NONE: 5,
 } as const;
 
 export type ExitCode = (typeof Exit)[keyof typeof Exit];
@@ -61,7 +62,7 @@ export function parseArgv(args: string[]): ParsedArgv {
 }
 
 const USAGE = `Usage: mdreview <command> <args>
-Commands: add-comment, export, find-snippet, list-messages, list-threads, update-comment-ref, upload, validate`;
+Commands: add-comment, export, find-snippet, list-messages, list-threads, next-ai-mention, update-comment-ref, upload, validate`;
 
 async function notImplemented(): Promise<number> {
   process.stderr.write('error: command not yet implemented\n');
@@ -107,6 +108,10 @@ async function dispatch(argv: ParsedArgv): Promise<number> {
     case 'upload': {
       const { uploadCommand } = await import('./commands/upload');
       return uploadCommand(argv.positional, argv.flags);
+    }
+    case 'next-ai-mention': {
+      const { nextAiMentionCommand } = await import('./commands/nextAiMention');
+      return nextAiMentionCommand(argv.positional, argv.flags);
     }
     default:
       process.stderr.write(`error: unknown command\n`);

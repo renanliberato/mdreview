@@ -151,6 +151,47 @@ Rule: never hand-edit the JSON in the comment block. Always shell out to `mdrevi
 
 ---
 
+## Queue-driven loop (responding to @ai mentions)
+
+When you need to process all outstanding `@ai` mentions in a file without listing threads
+first, use the queue command:
+
+```
+mdreview next-ai-mention <file> --json
+```
+
+This returns the oldest unresolved thread whose last comment starts with `@ai` (word
+boundary, case-sensitive), along with the surrounding source snippet. When no such thread
+remains, the command exits with code **5** — use that as the loop-stop signal:
+
+```bash
+while true; do
+  result=$(mdreview next-ai-mention <file> --json)
+  code=$?
+  [ $code -eq 5 ] && break          # no more @ai mentions
+  [ $code -ne 0 ] && { echo "error"; break; }
+  thread_id=$(echo "$result" | jq -r '.thread.id')
+  # … compose and post reply …
+  mdreview add-comment <file> "$thread_id" --text="..."
+done
+```
+
+The JSON shape is:
+```json
+{
+  "thread": { /* full Thread object */ },
+  "snippet": {
+    "quote": "...",
+    "line": 3,
+    "col": 5,
+    "strategy": "fuzzy",
+    "contextBlock": "..."
+  }
+}
+```
+
+---
+
 ## Anchor drift
 
 When `validate` reports `[WARN] orphan` or `find-snippet` returns exit 4, the stored quote no
@@ -194,3 +235,4 @@ Exit codes:
 | 2 | File not found / unreadable |
 | 3 | Thread not found |
 | 4 | Validation failed / anchor orphan |
+| 5 | No pending @ai mentions |

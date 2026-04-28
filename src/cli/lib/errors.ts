@@ -39,6 +39,8 @@ export function mapApiError(e: unknown, file?: string): { code: number; msg: str
       return { code: Exit.USER, msg: `error: start out of doc bounds\n` };
     case 'end_out_of_bounds':
       return { code: Exit.USER, msg: `error: end out of doc bounds\n` };
+    case 'no_pending_ai_mention':
+      return { code: Exit.NONE, msg: '' };
     case 'missing_path':
     case 'missing_thread_id':
     case 'invalid_text':

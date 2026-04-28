@@ -16,6 +16,7 @@ import {
   formatContext,
 } from '../../cli/lib/lineIndex';
 import { sourceToPlainText } from '../../cli/lib/offsetBridge';
+import { selectNextAiMention } from '../lib/nextAiMention';
 
 const cli = new Hono();
 
@@ -313,6 +314,50 @@ cli.get('/find-snippet', async (c) => {
     col,
     strategy: result.strategy,
     contextBlock,
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/cli/next-ai-mention?path=&context=N
+// ---------------------------------------------------------------------------
+cli.get('/next-ai-mention', async (c) => {
+  const filePath = c.req.query('path');
+  const ctxRaw = c.req.query('context') ?? '3';
+  if (!filePath) return c.json({ error: 'missing_path' }, 400);
+
+  const ctxN = parseInt(ctxRaw, 10);
+  if (Number.isNaN(ctxN) || ctxN < 0) {
+    return c.json({ error: 'invalid_context' }, 400);
+  }
+
+  const loaded = await loadFile(filePath);
+  if (!loaded.ok) return c.json(loaded.body, loaded.status as 400 | 403 | 404 | 500);
+
+  const rawStripped = stripCommentBlock(loaded.raw);
+  const threads = parseCommentBlock(loaded.raw);
+
+  const thread = selectNextAiMention(threads);
+  if (!thread) return c.json({ error: 'no_pending_ai_mention' }, 404);
+
+  const anchor = thread.comments[0]?.anchor;
+  if (!anchor) return c.json({ error: 'orphan' }, 422);
+
+  const result = firstHit(rawStripped, anchor) ?? tokenPrefix(rawStripped, anchor);
+  if (!result) return c.json({ error: 'orphan' }, 422);
+
+  const { line, col } = lineOf(rawStripped, result.offset);
+  const lines = rawStripped.split('\n');
+  const contextBlock = formatContext(lines, line, ctxN);
+
+  return c.json({
+    thread,
+    snippet: {
+      quote: anchor.quote,
+      line,
+      col,
+      strategy: result.strategy,
+      contextBlock,
+    },
   });
 });
 
