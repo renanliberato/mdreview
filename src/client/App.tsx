@@ -38,6 +38,10 @@ export function App(): React.JSX.Element {
     if (file) {
       loadFile(file).then(() => {
         stopPollingRef.current = startPolling();
+        // Re-fetch diff hunks if diff mode was persisted from a previous session
+        if (useStore.getState().showDiff) {
+          setShowDiff(true);
+        }
       });
     }
 

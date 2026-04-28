@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { v4 as uuid } from 'uuid';
 import type { Thread, Comment, SelectionAnchor } from '../../shared/types';
-import { addRecentFile } from './share';
+import { addRecentFile, getStoredUser } from './share';
+
+const SHOW_DIFF_KEY = 'mdreview-show-diff';
 
 export interface DiffHunk {
   startLine: number;
@@ -57,17 +59,18 @@ export const useStore = create<StoreState>((set, get) => ({
   filePath: null,
   raw: '',
   mtime: 0,
-  user: '',
+  user: getStoredUser() ?? '',
   loading: false,
   error: null,
   isPersisting: false,
   showResolved: false,
-  showDiff: false,
+  showDiff: (() => { try { return localStorage.getItem(SHOW_DIFF_KEY) === '1'; } catch { return false; } })(),
   diffHunks: [],
 
   setShowResolved: (show: boolean) => set({ showResolved: show }),
 
   setShowDiff: async (show: boolean) => {
+    try { localStorage.setItem(SHOW_DIFF_KEY, show ? '1' : '0'); } catch { /* ignore */ }
     if (!show) {
       set({ showDiff: false, diffHunks: [] });
       return;
