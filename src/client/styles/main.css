@@ -158,6 +158,18 @@ body {
   margin-bottom: 0.5em;
   line-height: 1.3;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.md-content h1:hover::after,
+.md-content h2:hover::after,
+.md-content h3:hover::after,
+.md-content h4:hover::after,
+.md-content h5:hover::after,
+.md-content h6:hover::after {
+  content: ' #';
+  opacity: 0.4;
+  font-weight: 400;
 }
 
 .md-content h1 { font-size: 2em; }

@@ -39,7 +39,9 @@ export async function uploadCommand(
 
   try {
     const res = await api.post<{ path: string }>('/api/cli/upload', { name, content });
-    process.stdout.write(res.path + '\n');
+    const serverUrl = (process.env.MDREVIEW_SERVER_URL ?? 'http://localhost:3001').replace(/\/+$/, '');
+    const docUrl = `${serverUrl}/?file=${encodeURIComponent(res.path)}`;
+    process.stdout.write(docUrl + '\n');
     return Exit.OK;
   } catch (e) {
     const { code, msg } = mapApiError(e, localPath);

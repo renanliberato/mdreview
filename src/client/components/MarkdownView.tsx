@@ -211,12 +211,31 @@ export function MarkdownView(): React.JSX.Element {
     return () => window.removeEventListener('mdreview:scroll-to-thread', handleScrollToThread);
   }, []);
 
+  // Scroll to the hash heading after html is injected into the DOM
+  useEffect(() => {
+    if (!html) return;
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const el = document.getElementById(hash);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [html]);
+
   // -------------------------------------------------------------------------
   // Click delegation: <mark data-thread-id="..."> → select that thread
+  //                   <h1-h6 id="..."> → update URL hash for shareable link
   // -------------------------------------------------------------------------
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const target = e.target as Element;
+
+      // Heading anchor: clicking a heading updates the URL hash
+      const heading = target.closest('h1, h2, h3, h4, h5, h6');
+      if (heading && (heading as HTMLElement).id) {
+        const id = (heading as HTMLElement).id;
+        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${id}`);
+        return;
+      }
+
       const mark = target.closest('mark.mdreview-highlight');
       if (!mark) return;
 

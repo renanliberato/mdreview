@@ -5,6 +5,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
 import { rehypeAnnotateOffsets } from './rehypeAnnotateOffsets';
 import { rehypeAnnotateLines } from './rehypeAnnotateLines';
+import { rehypeSlugHeadings } from './rehypeSlugHeadings';
 import { stripCommentBlock } from '../../shared/commentBlock';
 
 /**
@@ -25,6 +26,7 @@ export function renderMarkdown(raw: string): string {
     .use(remarkRehype)
     .use(rehypeAnnotateOffsets)
     .use(rehypeAnnotateLines)
+    .use(rehypeSlugHeadings)
     .use(rehypeStringify)
     .processSync(stripped);
   return String(result);
