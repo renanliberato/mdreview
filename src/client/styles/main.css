@@ -327,6 +327,14 @@ body {
   overflow: hidden;
 }
 
+.thread-sidebar--collapsed {
+  width: 36px;
+}
+
+.thread-sidebar__list--hidden {
+  display: none;
+}
+
 .thread-sidebar__header {
   display: flex;
   align-items: center;
@@ -336,6 +344,31 @@ body {
   font-weight: 600;
   font-size: 14px;
   flex-shrink: 0;
+}
+
+.thread-sidebar--collapsed .thread-sidebar__header {
+  padding: 12px 6px;
+  justify-content: center;
+}
+
+.thread-sidebar__collapse-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #888;
+  padding: 0 2px;
+  line-height: 1;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.thread-sidebar--collapsed .thread-sidebar__collapse-btn {
+  margin-left: 0;
+}
+
+.thread-sidebar__collapse-btn:hover {
+  color: #333;
 }
 
 .thread-sidebar__header-controls {

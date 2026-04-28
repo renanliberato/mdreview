@@ -9,6 +9,7 @@ export function ThreadSidebar(): React.JSX.Element {
   const setShowResolved = useStore((s) => s.setShowResolved);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [collapsed, setCollapsed]   = useState(false);
 
   // Listen for cross-component "select thread" events dispatched by MarkdownView
   // when the user clicks a <mark> highlight.
@@ -25,7 +26,13 @@ export function ThreadSidebar(): React.JSX.Element {
 
   const unresolvedCount = threads.filter((t) => !t.resolved).length;
 
-  const visible = showResolved ? threads : threads.filter((t) => !t.resolved);
+  const visible = (showResolved ? threads : threads.filter((t) => !t.resolved))
+    .slice()
+    .sort((a, b) => {
+      const aOff = a.comments[0]?.anchor.startOffset ?? 0;
+      const bOff = b.comments[0]?.anchor.startOffset ?? 0;
+      return aOff - bOff;
+    });
 
   const expandedThread = expandedId != null
     ? threads.find((t) => t.id === expandedId) ?? null
@@ -43,25 +50,36 @@ export function ThreadSidebar(): React.JSX.Element {
   }
 
   return (
-    <div className="thread-sidebar">
+    <div className={`thread-sidebar${collapsed ? ' thread-sidebar--collapsed' : ''}`}>
       <div className="thread-sidebar__header">
-        <span>Threads ({threads.length})</span>
-        {unresolvedCount > 0 && (
+        {!collapsed && <span className="thread-sidebar__title">Threads ({threads.length})</span>}
+        {!collapsed && unresolvedCount > 0 && (
           <span className="thread-sidebar__badge">{unresolvedCount}</span>
         )}
-        <div className="thread-sidebar__header-controls">
-          <label className="thread-sidebar__filter">
-            <input
-              type="checkbox"
-              checked={showResolved}
-              onChange={(e) => setShowResolved(e.target.checked)}
-            />
-            Show resolved
-          </label>
-        </div>
+        {!collapsed && (
+          <div className="thread-sidebar__header-controls">
+            <label className="thread-sidebar__filter">
+              <input
+                type="checkbox"
+                checked={showResolved}
+                onChange={(e) => setShowResolved(e.target.checked)}
+              />
+              Show resolved
+            </label>
+          </div>
+        )}
+        <button
+          className="thread-sidebar__collapse-btn"
+          onClick={() => setCollapsed((c) => !c)}
+          title={collapsed ? 'Expand comments' : 'Collapse comments'}
+          type="button"
+          aria-label={collapsed ? 'Expand comments' : 'Collapse comments'}
+        >
+          {collapsed ? '‹' : '›'}
+        </button>
       </div>
 
-      <div className="thread-sidebar__list">
+      <div className={`thread-sidebar__list${collapsed ? ' thread-sidebar__list--hidden' : ''}`}>
         {visible.length === 0 ? (
           <div className="thread-sidebar__empty">
             {threads.length === 0
@@ -101,7 +119,7 @@ export function ThreadSidebar(): React.JSX.Element {
         )}
       </div>
 
-      {expandedThread && (
+      {!collapsed && expandedThread && (
         <ThreadPanel thread={expandedThread} onClose={handleClose} />
       )}
     </div>
